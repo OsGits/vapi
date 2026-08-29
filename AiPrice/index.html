@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<!--
+  ============================================================================
+  站点：AiPrice —— 资源列表页（独立子站，可单独部署 / 单独打开）
+  路径：AiPrice/index.html
+
+  说明：
+    · 静态资源统一使用站点根目录下的 assets/（全站共一份，不在此目录内重复放置），
+      本页在子目录，故以 ../assets/ 回上一级引用：
+        ../assets/css/style.css
+        ../assets/js/main.js
+    · 顶部为标签切换器：全部 / Ai报价 / Docker
+    · 主体为单列列表，每行是一张「悬浮卡片」（阴影常驻，不依赖鼠标悬停）
+    · 新增条目的两个约定属性：
+        data-cat="ai|docker"   所属标签，需与顶部按钮的 data-cat 对应
+        data-search="关键词"    搜索命中用文本（建议小写）
+    · 返回上级：页头右侧第一个图标按钮指向 ../index.html（站点导航首页）
+  ============================================================================
+-->
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="AiPrice —— AI 接口报价与 Docker 镜像加速资源汇总，支持分类切换与关键词搜索。">
+  <meta name="keywords" content="AI报价,Docker镜像,镜像加速,API价格,容器镜像">
+  <meta name="theme-color" content="#c02c38">
+  <meta property="og:title" content="AiPrice | Ai报价 · Docker 镜像">
+  <meta property="og:description" content="AI 接口报价与 Docker 镜像加速资源汇总">
+  <meta property="og:type" content="website">
+  <title>AiPrice | Ai报价 · Docker 镜像</title>
+
+  <!-- 样式：回上一级，引用站点统一的 assets 目录 -->
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0%200%2032%2032'><rect width='32' height='32' rx='7' fill='%23c02c38'/><text x='16' y='23' font-size='16' font-family='sans-serif' font-weight='bold' fill='white' text-anchor='middle'>A</text></svg>">
+</head>
+
+<body>
+
+<!-- ==========================================================================
+     一、顶部栏：站点标识 + 标签切换器 + 工具
+     ========================================================================== -->
+<header class="header">
+  <div class="container header__bar">
+
+    <a class="brand" href="index.html">
+      <span class="brand__mark">A</span>
+      <span>AiPrice</span>
+    </a>
+
+    <!-- 标签切换：data-cat 与列表条目的 data-cat 一一对应 -->
+    <nav class="tabs" id="tabs" role="tablist" aria-label="资源分类">
+      <!-- 滑动胶囊：位置与宽度由 main.js 计算 -->
+      <span class="tabs__ink" aria-hidden="true"></span>
+      <button class="tab is-active" type="button" role="tab" data-cat="all"
+              aria-selected="true" aria-controls="list">全部<span class="tab__count">0</span></button>
+      <button class="tab" type="button" role="tab" data-cat="ai"
+              aria-selected="false" aria-controls="list">Ai报价<span class="tab__count">0</span></button>
+      <button class="tab" type="button" role="tab" data-cat="docker"
+              aria-selected="false" aria-controls="list">Docker<span class="tab__count">0</span></button>
+    </nav>
+
+    <div class="header__tools">
+      <!-- 返回上级：站点导航首页（../index.html） -->
+      <a class="icon-btn" href="../index.html" aria-label="返回站点首页" title="返回站点首页">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 10.5 12 3.5l9 7"></path>
+          <path d="M5.5 9.5V20h13V9.5"></path>
+        </svg>
+      </a>
+
+      <!-- 搜索：输入后过滤下方列表（防抖 200ms） -->
+      <form class="search" role="search" onsubmit="return false;">
+        <label class="sr-only" for="search-input">搜索资源</label>
+        <svg class="search__icon" width="15" height="15" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path>
+        </svg>
+        <input class="search__input" id="search-input" type="search"
+               placeholder="搜索资源" autocomplete="off">
+      </form>
+
+      <!-- 主题切换 -->
+      <button class="icon-btn theme-toggle" type="button" aria-label="切换深色模式">
+        <svg class="theme-toggle__sun" width="18" height="18" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4.5"></circle>
+          <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"></path>
+        </svg>
+        <svg class="theme-toggle__moon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 13.2A8.5 8.5 0 1110.8 3a6.8 6.8 0 0010.2 10.2z"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ==========================================================================
+     二、资源列表
+     卡片阴影为常驻效果（--shadow-float），hover 只是再抬高一档。
+     ========================================================================== -->
+<main class="container board">
+
+  <div class="board__head">
+    <h1 class="board__title">资源列表</h1>
+    <span class="board__count" id="board-count">共 0 项</span>
+  </div>
+
+  <div class="list" id="list">
+
+    <!-- ---------- Ai报价 ---------- -->
+    <article class="item reveal" data-cat="ai" data-search="openai gpt gpt-4o 官方 api 报价 tokens">
+      <span class="item__icon item__icon--ai">AI</span>
+      <div class="item__body">
+        <h2 class="item__title">
+          OpenAI 官方 API 报价<span class="badge badge--new">NEW</span>
+        </h2>
+        <p class="item__desc">
+          GPT-4o 与 GPT-4o-mini 的输入 / 输出计价说明，含 Batch 批量五折与 Prompt Caching 缓存折扣的适用场景。
+        </p>
+        <div class="item__meta">
+          <span class="chip chip--ai">Ai报价</span>
+          <span class="chip">输入 $2.50 / 百万 tokens</span>
+          <span class="chip">输出 $10.00</span>
+        </div>
+      </div>
+      <div class="item__side">
+        <span class="status"><i class="status__dot"></i>正常</span>
+        <span class="item__time">更新于 1 天前</span>
+        <span class="item__go">查看 →</span>
+      </div>
+    </article>
+
+    <article class="item reveal" data-cat="ai" data-search="anthropic claude opus sonnet haiku 缓存 caching">
+      <span class="item__icon item__icon--ai">CL</span>
+      <div class="item__body">
+        <h2 class="item__title">Anthropic Claude 全系报价</h2>
+        <p class="item__desc">
+          Opus / Sonnet / Haiku 三档定价对照，长上下文溢价规则，以及 Prompt Caching 最高可省 90% 的成本测算。
+        </p>
+        <div class="item__meta">
+          <span class="chip chip--ai">Ai报价</span>
+          <span class="chip">三档模型</span>
+          <span class="chip">缓存省 90%</span>
+        </div>
+      </div>
+      <div class="item__side">
+        <span class="status"><i class="status__dot"></i>正常</span>
+        <span class="item__time">更新于 2 天前</span>
+        <span class="item__go">查看 →</span>
+      </div>
+    </article>
+
+    <article class="item reveal" data-cat="ai" data-search="deepseek 国产 大模型 低价 错峰 优惠">
+      <span class="item__icon item__icon--ai">DS</span>
+      <div class="item__body">
+        <h2 class="item__title">
+          DeepSeek 官方 API 报价<span class="badge badge--hot">热</span>
+        </h2>
+        <p class="item__desc">
+          缓存命中与未命中的两档输入价格、输出价格，以及夜间错峰时段折扣的生效时间与限制条件。
+        </p>
+        <div class="item__meta">
+          <span class="chip chip--ai">Ai报价</span>
+          <span class="chip">缓存命中 ¥0.5 / 百万</span>
+          <span class="chip">错峰 5 折</span>
+        </div>
+      </div>
+      <div class="item__side">
+        <span class="status"><i class="status__dot"></i>正常</span>
+        <span class="item__time">更新于 3 天前</span>
+        <span class="item__go">查看 →</span>
+      </div>
+    </article>
+
+    <article class="item reveal" data-cat="ai" data-search="阿里云 百炼 通义千问 qwen token 包 按量 计费">
+      <span class="item__icon item__icon--ai">QW</span>
+      <div class="item__body">
+        <h2 class="item__title">阿里云百炼 · 通义千问计费</h2>
+        <p class="item__desc">
+          qwen-max / qwen-plus / qwen-turbo 按量付费单价，与资源包折算单价对比，附不同调用量下的成本平衡点。
+        </p>
+        <div class="item__meta">
+          <span class="chip chip--ai">Ai报价</span>
+          <span class="chip">按量 / 资源包</span>
+          <span class="chip">成本平衡点测算</span>
+        </div>
+      </div>
+      <div class="item__side">
+        <span class="status status--warn"><i class="status__dot"></i>价格调整</span>
+        <span class="item__time">更新于 5 天前</span>
+        <span class="item__go">查看 →</span>
+      </div>
+    </article>
+
+    <!-- ---------- Docker ---------- -->
+    <article class="item reveal" data-cat="docker" data-search="docker hub 镜像 加速 公共 代理 registry">
+      <span class="item__icon item__icon--docker">DK</span>
+      <div class="item__body">
+        <h2 class="item__title">
+          Docker Hub 公共镜像加速<span class="badge badge--free">免费</span>
+        </h2>
+        <p class="item__desc">
+          常用公共加速地址汇总，含配置方式（daemon.json 与 containerd 两种）、生效验证命令与常见拉取报错排查。
+        </p>
+        <div class="item__meta">
+          <span class="chip chip--docker">Docker</span>
+          <span class="chip">daemon.json</span>
+          <span class="chip">containerd</span>
+        </div>
+      </div>
+      <div class="item__side">
+        <span class="status"><i class="status__dot"></i>正常</span>
+        <span class="item__time">更新于 6 小时前</span>
+        <span class="item__go">查看 →</span>
+      </div>
+    </article>
+
+    <article class="item reveal" data-cat="docker" data-search="ghcr github container registry 镜像 代理">
+      <span class="item__icon item__icon--docker">GH</span>
+      <div class="item__body">
+        <h2 class="item__title">GHCR（ghcr.io）镜像代理</h2>
+        <p class="item__desc">
+          面向 GitHub 容器仓库的代理方案，覆盖公开镜像拉取与私有镜像鉴权两类场景，附速率限制说明。
+        </p>
+        <div class="item__meta">
+          <span class="chip chip--docker">Docker</span>
+          <span class="chip">公开 / 私有</span>
+          <span class="chip">鉴权配置</span>
+        </div>
+      </div>
+      <div class="item__side">
+        <span class="status"><i class="status__dot"></i>正常</span>
+        <span class="item__time">更新于 1 天前</span>
+        <span class="item__go">查看 →</span>
+      </div>
+    </article>
+
+    <article class="item reveal" data-cat="docker" data-search="阿里云 acr 容器 镜像 服务 个人版 企业版">
+      <span class="item__icon item__icon--docker">ACR</span>
+      <div class="item__body">
+        <h2 class="item__title">阿里云容器镜像服务 ACR</h2>
+        <p class="item__desc">
+          个人版与企业版的配额差异、地域内网加速地址、镜像构建与自动触发配置，以及常见权限错误处理方式。
+        </p>
+        <div class="item__meta">
+          <span class="chip chip--docker">Docker</span>
+          <span class="chip">个人版 / 企业版</span>
+          <span class="chip">内网加速</span>
+        </div>
+      </div>
+      <div class="item__side">
+        <span class="status"><i class="status__dot"></i>正常</span>
+        <span class="item__time">更新于 2 天前</span>
+        <span class="item__go">查看 →</span>
+      </div>
+    </article>
+
+    <article class="item reveal" data-cat="docker" data-search="k8s quay gcr kubernetes registry 自建 加速">
+      <span class="item__icon item__icon--docker">K8S</span>
+      <div class="item__body">
+        <h2 class="item__title">
+          k8s / quay / gcr 镜像加速<span class="badge">推荐</span>
+        </h2>
+        <p class="item__desc">
+          registry.k8s.io、quay.io、gcr.io 三类仓库的加速与前缀替换规则，含一键替换脚本与校验清单。
+        </p>
+        <div class="item__meta">
+          <span class="chip chip--docker">Docker</span>
+          <span class="chip">前缀替换</span>
+          <span class="chip">一键脚本</span>
+        </div>
+      </div>
+      <div class="item__side">
+        <span class="status status--down"><i class="status__dot"></i>部分不可用</span>
+        <span class="item__time">更新于 4 天前</span>
+        <span class="item__go">查看 →</span>
+      </div>
+    </article>
+
+  </div><!-- /.list -->
+
+  <!-- 空状态 -->
+  <div class="empty" id="list-empty" hidden>
+    <div class="empty__icon">🔍</div>
+    <p>没有匹配的资源，换个关键词或切换其他标签试试。</p>
+  </div>
+
+  <!-- 加载更多：数据来自 ../assets/js/main.js 中的 MORE_ITEMS -->
+  <div class="load-more-wrap">
+    <button class="btn" id="load-more" type="button">
+      <span class="btn__spinner" aria-hidden="true"></span>
+      <span>加载更多</span>
+    </button>
+    <p class="item__time" id="load-tip" hidden></p>
+  </div>
+</main>
+
+<!-- ==========================================================================
+     三、页脚
+     ========================================================================== -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer__inner">
+      <div>
+        <div class="footer__brand">AiPrice</div>
+        <p class="footer__desc">
+          AI 接口报价与 Docker 镜像加速的资源汇总。列表内容为示例数据，请替换为真实来源后再对外发布。
+        </p>
+      </div>
+      <nav class="footer__links" aria-label="页脚导航">
+        <a href="../index.html">返回首页</a>
+        <a href="#">使用说明</a>
+        <a href="#">提交资源</a>
+        <a href="#">意见反馈</a>
+      </nav>
+    </div>
+    <div class="footer__bottom">
+      © <span id="year">2026</span> AiPrice · oss.cnp.cc —— 静态演示站点，内容仅供参考。
+    </div>
+  </div>
+</footer>
+
+<!-- 回到顶部：滚动超过一屏后由脚本添加 .is-visible -->
+<button class="to-top" type="button" aria-label="回到顶部">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+       stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M12 19V5M5 12l7-7 7 7"></path>
+  </svg>
+</button>
+
+<!-- 脚本：置于 body 末尾，避免阻塞渲染。与引导页共用同一份 main.js -->
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

@@ -1,8 +1,91 @@
-<!-- index.html -->
 <!DOCTYPE html>
-<html>
-<body>
-  <h1>Hello GitHub Pages</h1>
-  <p>这是我的免费静态站。</p>
+<!--
+  ============================================================================
+  站点：OSS 导航（oss.cnp.cc）—— 导航引导页
+  路径：/index.html
+
+  说明：
+    · 本页只有一个职责：把访问者送到各个子站。
+    · 静态资源统一放在根目录 assets/ 下（本页在根目录，故用 assets/ 直接引用）：
+        assets/css/style.css   样式（第 10 节是本页专用样式）
+        assets/js/main.js      脚本（本页只用到 主题切换 + 页脚年份）
+    · 导航按钮在视口内「上下 + 左右」双向居中，PC 到移动端同一套布局。
+    · 按钮阴影是常驻的（--shadow-btn），不依赖鼠标悬停；hover 只是再抬高一档。
+    · 当前只挂了「AiPrice 报价列表」一个入口，其余入口后续按需往 .nav-list 里追加。
+    · 增删按钮：直接在 .nav-list 里复制 / 删除一个 <a class="nav-btn"> 即可，
+      无需改 CSS/JS。data-tone 控制左侧图标底色：ai(紫) / docker(蓝) / brand(红)。
+  ============================================================================
+-->
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="OSS 导航 —— 站点入口引导页，汇总 AiPrice 报价列表与应用下载等资源。">
+  <meta name="keywords" content="OSS导航,AiPrice,AI报价,应用下载">
+  <meta name="theme-color" content="#c02c38">
+  <meta property="og:title" content="OSS 导航 —— 站点入口">
+  <meta property="og:description" content="AiPrice 报价列表、应用下载等资源入口">
+  <meta property="og:type" content="website">
+  <title>OSS 导航 · 站点入口</title>
+
+  <!-- 样式：站点根相对路径，指向统一资源目录 assets/ -->
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23c02c38'/><text x='16' y='23' font-size='18' font-family='sans-serif' font-weight='bold' fill='white' text-anchor='middle'>O</text></svg>">
+</head>
+
+<!-- .home：启用 style.css 第 10 节的引导页布局（双向居中 + 光斑背景） -->
+<body class="home">
+
+<!-- 主题切换：固定在右上角。类名 .theme-fab，与列表页头部里的 .theme-toggle 是两个组件 -->
+<button class="theme-fab" type="button" aria-label="切换深色模式">
+  <svg class="theme-toggle__sun" width="19" height="19" viewBox="0 0 24 24" fill="none"
+       stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.5"></circle>
+    <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"></path>
+  </svg>
+  <svg class="theme-toggle__moon" width="19" height="19" viewBox="0 0 24 24" fill="none"
+       stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true">
+    <path d="M21 13.2A8.5 8.5 0 1110.8 3a6.8 6.8 0 0010.2 10.2z"></path>
+  </svg>
+</button>
+
+<main class="shell">
+  <div class="shell__inner">
+
+    <header class="hero">
+      <div class="hero__mark" aria-hidden="true">O</div>
+      <h1 class="hero__title">OSS 导航</h1>
+      <p class="hero__desc">选择一个入口继续</p>
+    </header>
+
+    <nav class="nav-list" aria-label="站点导航">
+      <!-- 复制这一段即可新增按钮；data-tone 可选 ai / docker / brand -->
+      <a class="nav-btn" href="AiPrice/index.html" data-tone="ai">
+        <span class="nav-btn__icon nav-btn__icon--img" aria-hidden="true">
+          <img class="nav-btn__icon-img" src="assets/img/ai.svg" alt="">
+        </span>
+        <span class="nav-btn__body">
+          <span class="nav-btn__title">AiPrice 报价列表</span>
+          <span class="nav-btn__desc">AI 接口报价与 Docker 镜像加速资源汇总</span>
+        </span>
+        <span class="nav-btn__go" aria-hidden="true">→</span>
+      </a>
+
+      <!-- 后续新增入口：复制上面整个 <a class="nav-btn"> 块，改 href / data-tone 即可。
+           data-tone 可选 ai(紫) / docker(蓝) / brand(红)；用图片图标时给图标格加
+           nav-btn__icon--img 修饰类，内部放 <img class="nav-btn__icon-img" src="assets/img/xx.svg" alt=""> -->
+    </nav>
+
+  </div>
+</main>
+
+<footer class="foot">
+  © <span id="year">2026</span> OSS 导航 · oss.cnp.cc
+</footer>
+
+<!-- 脚本：置于 body 末尾，避免阻塞渲染。
+     本页没有 #list / #tabs / .to-top，main.js 中对应模块会自动跳过，
+     实际生效的只有主题切换与页脚年份。 -->
+<script src="assets/js/main.js"></script>
 </body>
 </html>
